@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trip Planner</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fa;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    input, textarea, button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      background: #0078d4;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #005ea6;
+    }
+    .trip {
+      margin-top: 15px;
+      padding: 15px;
+      border-left: 5px solid #0078d4;
+      background: #f9f9f9;
+      border-radius: 5px;
+    }
+    .delete-btn {
+      background: crimson;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Trip Planner</h1>
+    <input type="text" id="destination" placeholder="Destination">
+    <input type="date" id="startDate">
+    <input type="date" id="endDate">
+    <textarea id="notes" placeholder="Trip Notes"></textarea>
+    <button onclick="addTrip()">Add Trip</button>
+    <div id="tripList"></div>
+  </div>
+
+  <script>
+    let trips = [];
+
+    function addTrip() {
+      const destination = document.getElementById('destination').value;
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const notes = document.getElementById('notes').value;
+
+      if (!destination || !startDate || !endDate) {
+        alert("Please fill all required fields.");
+        return;
+      }
+
+      const trip = {
+        id: Date.now(),
+        destination,
+        startDate,
+        endDate,
+        notes
+      };
+
+      trips.push(trip);
+      renderTrips();
+
+      document.getElementById('destination').value = '';
+      document.getElementById('startDate').value = '';
+      document.getElementById('endDate').value = '';
+      document.getElementById('notes').value = '';
+    }
+
+    function deleteTrip(id) {
+      trips = trips.filter(trip => trip.id !== id);
+      renderTrips();
+    }
+
+    function renderTrips() {
+      const tripList = document.getElementById('tripList');
+      tripList.innerHTML = trips.map(trip => `
+        <div class="trip">
+          <h3>${trip.destination}</h3>
+          <p><strong>Start:</strong> ${trip.startDate}</p>
+          <p><strong>End:</strong> ${trip.endDate}</p>
+          <p>${trip.notes}</p>
+          <button class="delete-btn" onclick="deleteTrip(${trip.id})">Delete</button>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>
