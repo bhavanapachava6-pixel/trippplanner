@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TripPlanner - Plan Your Dream Trip</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #f2f7fa;
+    color: #243447;
+}
+
+header {
+    background: linear-gradient(120deg, #087e8b, #00a896);
+    color: white;
+    text-align: center;
+    padding: 35px 15px;
+}
+
+header h1 {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 25px auto;
+    padding: 15px;
+}
+
+.card {
+    background: white;
+    padding: 25px;
+    margin-bottom: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px #dce5e9;
+}
+
+h2 {
+    color: #087e8b;
+    margin-bottom: 18px;
+}
+
+label {
+    display: block;
+    margin-top: 12px;
+    font-weight: bold;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px;
+    margin-top: 7px;
+    border: 1px solid #ccd6dd;
+    border-radius: 7px;
+    font-size: 15px;
+}
+
+button {
+    background: #087e8b;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    margin-top: 15px;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #065c65;
+}
+
+.delete {
+    background: #e74c3c;
+    margin-left: 8px;
+}
+
+.delete:hover {
+    background: #c0392b;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+}
+
+.trip-item {
+    background: #eaf8f7;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 12px 0;
+    overflow-wrap: anywhere;
+}
+
+.trip-item h3 {
+    color: #087e8b;
+    margin-bottom: 8px;
+}
+
+.price {
+    color: #087e8b;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.empty {
+    color: #888;
+    margin-top: 10px;
+}
+
+footer {
+    text-align: center;
+    padding: 25px;
+    color: #777;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🌍 TripPlanner</h1>
+    <p>Explore the World | Plan Your Journey | Make Memories</p>
+</header>
+
+<div class="container">
+
+    <!-- TRIP DETAILS -->
+    <section class="card">
+        <h2>✈️ Plan Your Trip</h2>
+
+        <label>Destination</label>
+        <input type="text" id="destination"
+        placeholder="Enter destination">
+
+        <div class="grid">
+            <div>
+                <label>Starting Date</label>
+                <input type="date" id="startDate">
+            </div>
+
+            <div>
+                <label>Ending Date</label>
+                <input type="date" id="endDate">
+            </div>
+        </div>
+
+        <label>Number of Travellers</label>
+        <input type="number" id="travellers" min="1" value="1">
+
+        <label>Travel Type</label>
+        <select id="travelType">
+            <option>Adventure</option>
+            <option>Family Vacation</option>
+            <option>Solo Trip</option>
+            <option>Honeymoon</option>
+            <option>Business Trip</option>
+            <option>Friends Trip</option>
+        </select>
+
+        <button onclick="addTrip()">Save Trip 🌴</button>
+    </section>
+
+    <!-- SAVED TRIPS -->
+    <section class="card">
+        <h2>🧳 My Trips</h2>
+        <div id="tripList">
+            <p class="empty">No trips planned yet.</p>
+        </div>
+    </section>
+
+    <!-- BUDGET CALCULATOR -->
+    <section class="card">
+        <h2>💰 Travel Budget Calculator</h2>
+
+        <label>Transport Cost (₹)</label>
+        <input type="number" id="transport" min="0" value="0">
+
+        <label>Hotel Cost (₹)</label>
+        <input type="number" id="hotel" min="0" value="0">
+
+        <label>Food Cost (₹)</label>
+        <input type="number" id="food" min="0" value="0">
+
+        <label>Other Expenses (₹)</label>
+        <input type="number" id="other" min="0" value="0">
+
+        <button onclick="calculateBudget()">Calculate Budget</button>
+
+        <p style="margin-top:20px">Total Estimated Budget:</p>
+        <p class="price" id="totalBudget">₹0</p>
+    </section>
+
+    <!-- ACTIVITIES -->
+    <section class="card">
+        <h2>📍 Travel Activities</h2>
+
+        <input type="text" id="activity"
+        placeholder="Enter activity or place to visit">
+
+        <button onclick="addActivity()">Add Activity</button>
+
+        <div id="activityList"></div>
+    </section>
+
+</div>
+
+<footer>
+    <p>© 2026 TripPlanner | Your Journey Begins Here ❤️</p>
+</footer>
+
+<script>
+
+// LOAD SAVED DATA
+let trips = JSON.parse(localStorage.getItem("myTrips")) || [];
+let activities = JSON.parse(localStorage.getItem("myActivities")) || [];
+
+function saveData() {
+    localStorage.setItem("myTrips", JSON.stringify(trips));
+    localStorage.setItem("myActivities", JSON.stringify(activities));
+}
+
+// ADD TRIP
+function addTrip() {
+
+    const destination = document.getElementById("destination").value.trim();
+    const startDate = document.getElementById("startDate").value;
+    const endDate = document.getElementById("endDate").value;
+    const travellers = Number(document.getElementById("travellers").value);
+    const type = document.getElementById("travelType").value;
+
+    if (!destination || !startDate || !endDate || travellers < 1) {
+        alert("Please enter all trip details correctly!");
+        return;
+    }
+
+    if (endDate < startDate) {
+        alert("Ending date cannot be before starting date!");
+        return;
+    }
+
+    trips.push({
+        destination,
+        startDate,
+        endDate,
+        travellers,
+        type
+    });
+
+    saveData();
+    displayTrips();
+
+    document.getElementById("destination").value = "";
+    document.getElementById("startDate").value = "";
+    document.getElementById("endDate").value = "";
+    document.getElementById("travellers").value = 1;
+
+    alert("Your trip has been saved! 🎉");
+}
+
+// DISPLAY TRIPS
+function displayTrips() {
+
+    const list = document.getElementById("tripList");
+    list.innerHTML = "";
+
+    if (trips.length === 0) {
+        list.innerHTML = '<p class="empty">No trips planned yet.</p>';
+        return;
+    }
+
+    trips.forEach((trip, index) => {
+
+        const div = document.createElement("div");
+        div.className = "trip-item";
+
+        const title = document.createElement("h3");
+        title.textContent = "🌍 " + trip.destination;
+
+        const details = document.createElement("p");
+        details.textContent =
+            "From: " + trip.startDate +
+            " | To: " + trip.endDate +
+            " | Travellers: " + trip.travellers +
+            " | Type: " + trip.type;
+
+        const remove = document.createElement("button");
+        remove.textContent = "Delete Trip";
+        remove.className = "delete";
+
+        remove.onclick = function() {
+            trips.splice(index, 1);
+            saveData();
+            displayTrips();
+        };
+
+        div.append(title, details, remove);
+        list.appendChild(div);
+
+    });
+}
+
+// BUDGET CALCULATOR
+function calculateBudget() {
+
+    const fields = ["transport", "hotel", "food", "other"];
+
+    const values = fields.map(id =>
+        Number(document.getElementById(id).value)
+    );
+
+    if (values.some(value => !Number.isFinite(value) || value < 0)) {
+        alert("Please enter valid positive expenses.");
+        return;
+    }
+
+    const total = values.reduce((sum, value) => sum + value, 0);
+
+    document.getElementById("totalBudget").textContent =
+        "₹" + total.toLocaleString("en-IN");
+}
+
+// ADD ACTIVITIES
+function addActivity() {
+
+    const input = document.getElementById("activity");
+    const activity = input.value.trim();
+
+    if (!activity) {
+        alert("Please enter an activity!");
+        return;
+    }
+
+    activities.push(activity);
+    saveData();
+    displayActivities();
+
+    input.value = "";
+}
+
+// DISPLAY ACTIVITIES
+function displayActivities() {
+
+    const list = document.getElementById("activityList");
+    list.innerHTML = "";
+
+    activities.forEach((activity, index) => {
+
+        const div = document.createElement("div");
+        div.className = "trip-item";
+
+        const name = document.createElement("span");
+        name.textContent = "📌 " + activity;
+
+        const remove = document.createElement("button");
+        remove.textContent = "Delete";
+        remove.className = "delete";
+
+        remove.onclick = function() {
+            activities.splice(index, 1);
+            saveData();
+            displayActivities();
+        };
+
+        div.append(name, remove);
+        list.appendChild(div);
+
+    });
+}
+
+// INITIALIZE
+displayTrips();
+displayActivities();
+
+</script>
+
+</body>
+</html>
